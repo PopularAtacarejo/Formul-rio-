@@ -1,0 +1,208 @@
+
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8">
+  <title>Envio de Currículo</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(to right, #f2fcfe, #28a745);
+      margin: 0;
+      padding: 50px;
+    }
+    form {
+      background: #fff;
+      padding: 30px;
+      max-width: 650px;
+      margin: auto;
+      border-radius: 15px;
+      box-shadow: 0 0 20px rgba(0,0,0,0.1);
+      animation: fadeIn 0.8s ease-in-out;
+    }
+    h2 {
+      text-align: center;
+      color: #28a745;
+      margin-bottom: 20px;
+    }
+    label {
+      display: block;
+      margin-top: 15px;
+      font-weight: 600;
+      color: #333;
+    }
+    input, select {
+      width: 100%;
+      padding: 10px;
+      margin-top: 5px;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      transition: border 0.3s;
+    }
+    input:focus, select:focus {
+      border-color: #28a745;
+      outline: none;
+    }
+    button {
+      background: #28a745;
+      color: white;
+      padding: 12px;
+      margin-top: 25px;
+      width: 100%;
+      border: none;
+      border-radius: 8px;
+      font-size: 16px;
+      transition: background 0.3s ease;
+    }
+    button:hover {
+      background: #218838;
+      cursor: pointer;
+    }
+    .mensagem-sucesso {
+      display: none;
+      margin-top: 15px;
+      padding: 10px;
+      background: #d4edda;
+      color: #155724;
+      border-radius: 5px;
+      text-align: center;
+    }
+    @keyframes fadeIn {
+      from {opacity: 0; transform: translateY(20px);}
+      to {opacity: 1; transform: translateY(0);}
+    }
+  </style>
+</head>
+<body>
+  <form id="formCurriculo">
+    <h2>Envio de Currículo</h2>
+
+    <label>Nome:</label>
+    <input type="text" name="nome" required>
+
+    <label>CPF:</label>
+    <input type="text" name="cpf" required id="cpf">
+
+    <label>CEP:</label>
+    <input type="text" name="cep" required id="cep">
+
+    <label>Cidade:</label>
+    <input type="text" name="cidade" required id="cidade">
+
+    <label>Bairro:</label>
+    <input type="text" name="bairro" required id="bairro">
+
+    <label>Rua:</label>
+    <input type="text" name="rua" required id="rua">
+
+    <label>Telefone:</label>
+    <input type="text" name="telefone" required id="telefone">
+
+    <label>Email:</label>
+    <input type="email" name="email" required>
+
+    <label>Possui Transporte?</label>
+    <select name="transporte" required>
+      <option value="">Selecione</option>
+      <option>Sim</option>
+      <option>Não</option>
+    </select>
+
+    <label>Vaga:</label>
+    <select name="vaga" required>
+      <option value="">Selecione</option>
+      <option>AUXILIAR DE PADEIRO</option>
+      <option>AUXILIAR DE LIMPEZA</option>
+      <option>AUXILIAR DE T.I</option>
+      <option>AUXILIAR ADMINISTRATIVO</option>
+      <option>BALCONISTA DE AÇOUGUE</option>
+      <option>BALCONISTA DE PADARIA</option>
+      <option>EMBALADOR (A)</option>
+      <option>REPOSITOR (A)</option>
+      <option>OPERADOR (A) DE CAIXA</option>
+      <option>OPERADOR DE SUPERMERCADO</option>
+      <option>AUX. DE PREVENÇÃO E PERDA</option>
+    </select>
+
+    <label>Currículo (PDF/DOC):</label>
+    <input type="file" name="arquivo" accept=".pdf,.doc,.docx" required>
+
+    <button type="submit">Enviar</button>
+    <div class="mensagem-sucesso" id="mensagemSucesso">Currículo enviado com sucesso!</div>
+  </form>
+
+  
+
+<script src="https://unpkg.com/imask"></script>
+<script>
+  const cep = document.getElementById("cep");
+  const cidade = document.getElementById("cidade");
+  const bairro = document.getElementById("bairro");
+  const rua = document.getElementById("rua");
+
+  // Debounce CEP
+  let cepTimeout;
+  cep.addEventListener("input", () => {
+    clearTimeout(cepTimeout);
+    cepTimeout = setTimeout(fetchCEP, 500);
+  });
+
+  function fetchCEP() {
+    const cepVal = cep.value.replace(/\D/g, "");
+    if (cepVal.length === 8) {
+      fetch("https://viacep.com.br/ws/" + cepVal + "/json/")
+        .then(res => res.json())
+        .then(data => {
+          if (!data.erro) {
+            cidade.value = data.localidade;
+            bairro.value = data.bairro;
+            rua.value = data.logradouro;
+          }
+        })
+        .catch(() => console.error("Erro ao buscar CEP"));
+    }
+  }
+
+  // Máscaras
+  IMask(document.getElementById("cpf"), { mask: "000.000.000-00" });
+  IMask(document.getElementById("cep"), { mask: "00000-000" });
+  IMask(document.getElementById("telefone"), {
+    mask: [{ mask: "(00) 0000-0000" }, { mask: "(00) 00000-0000" }]
+  });
+
+  document.getElementById("formCurriculo").addEventListener("submit", async function(e) {
+    e.preventDefault();
+    const formData = new FormData(this);
+    const button = this.querySelector("button");
+    button.disabled = true;
+    button.textContent = "Enviando...";
+
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 10000); // 10s timeout
+
+    try {
+      const res = await fetch('https://curriculos-backend-v2.onrender.com/api/enviar', {
+        method: 'POST',
+        body: formData,
+        signal: controller.signal
+      });
+      clearTimeout(timeoutId);
+
+      if (res.ok) {
+        document.getElementById("mensagemSucesso").style.display = "block";
+        this.reset();
+      } else {
+        const errorText = await res.text();
+        alert("Erro ao enviar currículo: " + errorText);
+      }
+    } catch (err) {
+      alert("Erro de conexão ou tempo excedido.");
+    } finally {
+      button.disabled = false;
+      button.textContent = "Enviar";
+    }
+  });
+</script>
+
+</body>
+</html>
