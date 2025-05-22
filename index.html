@@ -1,8 +1,8 @@
-
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Envio de Currículo</title>
   <style>
     body {
@@ -11,6 +11,7 @@
       margin: 0;
       padding: 50px;
     }
+
     form {
       background: #fff;
       padding: 30px;
@@ -20,29 +21,35 @@
       box-shadow: 0 0 20px rgba(0,0,0,0.1);
       animation: fadeIn 0.8s ease-in-out;
     }
+
     h2 {
       text-align: center;
       color: #28a745;
       margin-bottom: 20px;
     }
+
     label {
       display: block;
       margin-top: 15px;
       font-weight: 600;
       color: #333;
     }
+
     input, select {
       width: 100%;
       padding: 10px;
       margin-top: 5px;
+      margin-bottom: 15px;
       border: 1px solid #ccc;
       border-radius: 8px;
       transition: border 0.3s;
     }
+
     input:focus, select:focus {
       border-color: #28a745;
       outline: none;
     }
+
     button {
       background: #28a745;
       color: white;
@@ -54,10 +61,12 @@
       font-size: 16px;
       transition: background 0.3s ease;
     }
+
     button:hover {
       background: #218838;
       cursor: pointer;
     }
+
     .mensagem-sucesso {
       display: none;
       margin-top: 15px;
@@ -67,26 +76,37 @@
       border-radius: 5px;
       text-align: center;
     }
+
     @keyframes fadeIn {
       from {opacity: 0; transform: translateY(20px);}
       to {opacity: 1; transform: translateY(0);}
     }
-  
+
     @media (max-width: 600px) {
       body {
-        padding: 20px;
+        padding: 10px;
       }
+
       form {
-        padding: 20px;
+        padding: 15px;
         width: 100%;
         box-sizing: border-box;
+        border-radius: 10px;
       }
+
       input, select, button {
+        font-size: 18px;
+      }
+
+      label {
         font-size: 16px;
       }
-    }
-</style>
 
+      h2 {
+        font-size: 22px;
+      }
+    }
+  </style>
 </head>
 <body>
   <form id="formCurriculo">
@@ -146,8 +166,6 @@
     <div class="mensagem-sucesso" id="mensagemSucesso">Currículo enviado com sucesso!</div>
   </form>
 
-  
-
 <script src="https://unpkg.com/imask"></script>
 <script>
   const cep = document.getElementById("cep");
@@ -155,7 +173,6 @@
   const bairro = document.getElementById("bairro");
   const rua = document.getElementById("rua");
 
-  // Debounce CEP
   let cepTimeout;
   cep.addEventListener("input", () => {
     clearTimeout(cepTimeout);
@@ -178,7 +195,6 @@
     }
   }
 
-  // Máscaras
   IMask(document.getElementById("cpf"), { mask: "000.000.000-00" });
   IMask(document.getElementById("cep"), { mask: "00000-000" });
   IMask(document.getElementById("telefone"), {
@@ -193,7 +209,7 @@
     button.textContent = "Enviando...";
 
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 10000); // 10s timeout
+    const timeoutId = setTimeout(() => controller.abort(), 10000);
 
     try {
       const res = await fetch('https://curriculos-backend-v2.onrender.com/api/enviar', {
